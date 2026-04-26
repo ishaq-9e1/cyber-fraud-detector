@@ -1,0 +1,105 @@
+{% extends "fraud_app/base.html" %}
+{% block title %}History — CyberGuard{% endblock %}
+{% block extra_style %}
+<style>
+.hist-header{padding:1.5rem 0 1rem;border-bottom:1px solid var(--border);margin-bottom:1.2rem}
+.hist-header h1{font-size:1.5rem;font-weight:800;color:#fff}
+.hist-header p{font-size:.8rem;color:var(--muted);font-family:var(--mono);margin-top:.3rem}
+
+.filter-bar{
+  display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;
+  margin-bottom:1.2rem;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:.8rem 1rem;
+}
+.filter-bar label{font-size:.68rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-right:.2rem}
+.filter-bar select{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);
+  padding:5px 10px;font-size:.8rem;font-family:var(--mono);
+  outline:none;cursor:pointer;
+}
+.filter-bar select:focus{border-color:rgba(255,60,60,.35)}
+
+.empty{text-align:center;padding:3rem;color:var(--muted);font-family:var(--mono);font-size:.85rem}
+
+.hist-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.tbl td a{color:var(--blue);text-decoration:none;font-family:var(--mono);font-size:.78rem}
+.tbl td a:hover{text-decoration:underline}
+.text-preview{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:.8rem}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hist-header">
+  <h1>Scan History</h1>
+  <p>showing {{ total }} case{{ total|pluralize }} &nbsp;·&nbsp;
+    {% if sev_filter != 'all' %}filtered by {{ sev_filter }}{% endif %}
+    {% if type_filter != 'all' %}&nbsp;·&nbsp; type: {{ type_filter }}{% endif %}
+  </p>
+</div>
+
+<form method="get" action="/history/">
+  <div class="filter-bar">
+    <label>Severity</label>
+    <select name="severity" onchange="this.form.submit()">
+      <option value="all" {% if sev_filter == 'all' %}selected{% endif %}>All</option>
+      <option value="CRITICAL" {% if sev_filter == 'CRITICAL' %}selected{% endif %}>Critical</option>
+      <option value="HIGH" {% if sev_filter == 'HIGH' %}selected{% endif %}>High</option>
+      <option value="MEDIUM" {% if sev_filter == 'MEDIUM' %}selected{% endif %}>Medium</option>
+      <option value="LOW" {% if sev_filter == 'LOW' %}selected{% endif %}>Low</option>
+    </select>
+    <label style="margin-left:.5rem">Fraud type</label>
+    <select name="type" onchange="this.form.submit()">
+      <option value="all" {% if type_filter == 'all' %}selected{% endif %}>All types</option>
+      {% for t in scam_types %}
+      <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+    {% if sev_filter != 'all' or type_filter != 'all' %}
+    <a href="/history/" class="btn btn-outline" style="padding:5px 12px;font-size:.77rem">✕ Clear</a>
+    {% endif %}
+  </div>
+</form>
+
+{% if cases %}
+<div class="hist-table-wrap">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Case ID</th>
+        <th>Preview</th>
+        <th>Type</th>
+        <th>Score</th>
+        <th>Severity</th>
+        <th>Channel</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in cases %}
+      <tr>
+        <td><a href="/history/case/{{ c.case_id }}/">{{ c.case_id }}</a></td>
+        <td><div class="text-preview">{{ c.text }}</div></td>
+        <td style="font-size:.8rem;color:var(--text)">{{ c.scam_type }}</td>
+        <td style="font-family:var(--mono);font-weight:700;color:{% if c.risk_score > 65 %}var(--red){% elif c.risk_score > 45 %}var(--orange){% else %}var(--green){% endif %}">
+          {{ c.risk_score }}
+        </td>
+        <td>
+          <span class="badge b-{% if c.severity == 'CRITICAL' %}critical{% elif c.severity == 'HIGH' %}high{% elif c.severity == 'MEDIUM' %}medium{% else %}low{% endif %}">
+            {{ c.severity }}
+          </span>
+        </td>
+        <td style="font-family:var(--mono);font-size:.75rem;color:var(--muted)">{{ c.channel|default:"unknown" }}</td>
+        <td style="font-family:var(--mono);font-size:.73rem;color:var(--muted)">{{ c.timestamp }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty">
+  ⬡ No cases found {% if sev_filter != 'all' or type_filter != 'all' %}with current filters{% else %}— scan a message to get started{% endif %}
+</div>
+{% endif %}
+{% endblock %}

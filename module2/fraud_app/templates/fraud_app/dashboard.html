@@ -1,0 +1,148 @@
+{% extends "fraud_app/base.html" %}
+{% block title %}Dashboard — CyberGuard{% endblock %}
+{% block extra_style %}
+<style>
+.dash-header{padding:1.5rem 0 1rem;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+.dash-header h1{font-size:1.6rem;font-weight:800;color:#fff}
+.dash-header p{font-size:.83rem;color:var(--muted);margin-top:.3rem;font-family:var(--mono)}
+.demo-notice{
+  background:rgba(77,166,255,.06);border:1px solid rgba(77,166,255,.2);
+  border-radius:8px;padding:.7rem 1.1rem;
+  font-size:.8rem;color:#4da6ff;font-family:var(--mono);
+  margin-bottom:1.2rem;
+}
+
+/* stat cards */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1.5rem}
+@media(max-width:700px){.stat-row{grid-template-columns:1fr 1fr}}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:1.1rem 1.2rem;
+}
+.stat-card .sn{font-size:2rem;font-weight:800;font-family:var(--mono);line-height:1}
+.stat-card .sl{font-size:.65rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
+
+/* numpy stats */
+.np-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin-bottom:1.5rem}
+@media(max-width:700px){.np-row{grid-template-columns:1fr 1fr}}
+.np-card{
+  background:rgba(255,255,255,.02);border:1px solid var(--border);
+  border-radius:10px;padding:.8rem 1rem;text-align:center;
+}
+.np-card .nn{font-size:1.4rem;font-weight:700;font-family:var(--mono);color:var(--blue)}
+.np-card .nl{font-size:.62rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:3px}
+
+/* charts */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem}
+.chart-card h4{font-size:.65rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:.8rem}
+.chart-card img{width:100%;border-radius:8px;display:block}
+.no-chart{color:var(--muted);font-size:.8rem;text-align:center;padding:2rem;font-family:var(--mono)}
+
+/* recent table */
+.recent-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.recent-head{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.2rem;border-bottom:1px solid var(--border)}
+.recent-head h3{font-size:.85rem;font-weight:700}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+  <h1>Analytics Dashboard</h1>
+  <p>system status: <span style="color:var(--green)">■ live</span> &nbsp;·&nbsp; total scans: {{ summary.total }} &nbsp;·&nbsp; high risk: {{ summary.high_risk }}</p>
+</div>
+
+{% if using_demo %}
+<div class="demo-notice">⬡ Showing demo data — scan messages to populate with real data</div>
+{% endif %}
+
+<!-- Summary stats -->
+<div class="stat-row">
+  <div class="stat-card">
+    <div class="sn" style="color:var(--text)">{{ summary.total|default:"0" }}</div>
+    <div class="sl">Total scans</div>
+  </div>
+  <div class="stat-card">
+    <div class="sn" style="color:var(--red)">{{ summary.high_risk|default:"0" }}</div>
+    <div class="sl">High risk</div>
+  </div>
+  <div class="stat-card">
+    <div class="sn" style="color:var(--orange)">{{ summary.suspicious|default:"0" }}</div>
+    <div class="sl">Suspicious</div>
+  </div>
+  <div class="stat-card">
+    <div class="sn" style="color:var(--blue)">{{ summary.avg_score|default:"0" }}</div>
+    <div class="sl">Avg risk score</div>
+  </div>
+</div>
+
+<!-- NumPy stats -->
+{% if numpy_stats %}
+<div class="sec-label" style="margin-bottom:.7rem">NumPy statistical analysis</div>
+<div class="np-row">
+  <div class="np-card"><div class="nn">{{ numpy_stats.mean|default:"—" }}</div><div class="nl">Mean</div></div>
+  <div class="np-card"><div class="nn">{{ numpy_stats.median|default:"—" }}</div><div class="nl">Median</div></div>
+  <div class="np-card"><div class="nn">{{ numpy_stats.std|default:"—" }}</div><div class="nl">Std Dev</div></div>
+  <div class="np-card"><div class="nn">{{ numpy_stats.p90|default:"—" }}</div><div class="nl">90th Pct</div></div>
+</div>
+{% endif %}
+
+<!-- Charts -->
+{% load static %}
+<div class="sec-label" style="margin-bottom:.7rem">Matplotlib visualizations</div>
+<div class="charts-grid">
+  <div class="chart-card">
+    <h4>Scam type distribution</h4>
+    <img src="{% static 'fraud_app/chart_bar.png' %}?v={% now 'U' %}" alt="bar chart"
+      onerror="this.parentElement.innerHTML='<div class=no-chart>Scan messages to populate</div>'">
+  </div>
+  <div class="chart-card">
+    <h4>Severity breakdown</h4>
+    <img src="{% static 'fraud_app/chart_pie.png' %}?v={% now 'U' %}" alt="pie chart"
+      onerror="this.parentElement.innerHTML='<div class=no-chart>Scan messages to populate</div>'">
+  </div>
+  <div class="chart-card" style="grid-column:span 2">
+    <h4>Daily trend</h4>
+    <img src="{% static 'fraud_app/chart_line.png' %}?v={% now 'U' %}" alt="line chart"
+      onerror="this.parentElement.innerHTML='<div class=no-chart>Scan messages to populate</div>'">
+  </div>
+  <div class="chart-card" style="grid-column:span 2">
+    <h4>Score vs category scatter</h4>
+    <img src="{% static 'fraud_app/chart_scatter.png' %}?v={% now 'U' %}" alt="scatter"
+      onerror="this.parentElement.innerHTML='<div class=no-chart>Scan messages to populate</div>'">
+  </div>
+</div>
+
+<!-- Recent cases -->
+{% if recent_cases %}
+<div class="recent-card">
+  <div class="recent-head">
+    <h3>Recent detections</h3>
+    <a href="/history/" class="btn btn-outline" style="padding:5px 14px;font-size:.78rem">View all →</a>
+  </div>
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Case ID</th><th>Type</th><th>Score</th><th>Severity</th><th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in recent_cases %}
+      <tr>
+        <td><code style="color:var(--blue)"><a href="/history/case/{{ c.case_id }}/" style="color:var(--blue);text-decoration:none">{{ c.case_id }}</a></code></td>
+        <td>{{ c.scam_type }}</td>
+        <td style="font-family:var(--mono);color:{% if c.risk_score > 65 %}var(--red){% elif c.risk_score > 45 %}var(--orange){% else %}var(--green){% endif %}">{{ c.risk_score }}/100</td>
+        <td>
+          <span class="badge b-{% if c.severity == 'CRITICAL' %}critical{% elif c.severity == 'HIGH' %}high{% elif c.severity == 'MEDIUM' %}medium{% else %}low{% endif %}">
+            {{ c.severity }}
+          </span>
+        </td>
+        <td style="color:var(--muted);font-family:var(--mono);font-size:.75rem">{{ c.timestamp }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,246 @@
+{% extends "fraud_app/base.html" %}
+{% block title %}CyberGuard — Fraud Detection{% endblock %}
+
+{% block extra_style %}
+<style>
+.hero{text-align:center;padding:3.5rem 0 2rem}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 14px;border-radius:20px;
+  background:var(--red-dim);border:1px solid rgba(255,60,60,.2);
+  font-size:.72rem;font-family:var(--mono);color:var(--red);
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:1.2rem;
+}
+.hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.5s infinite}
+.hero h1{font-size:2.6rem;font-weight:800;color:#fff;line-height:1.1;margin-bottom:.7rem;letter-spacing:-1px}
+.hero h1 em{font-style:normal;color:var(--red);text-shadow:0 0 30px rgba(255,60,60,.4)}
+.hero p{color:var(--muted);font-size:.92rem;max-width:480px;margin:0 auto 2rem;line-height:1.6;font-weight:400}
+
+.scan-wrap{max-width:720px;margin:0 auto}
+.scan-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;padding:1.6rem;
+  transition:border-color .3s;
+}
+.scan-box.typing{border-color:rgba(255,60,60,.3);box-shadow:0 0 40px rgba(255,60,60,.06)}
+.scan-box textarea{
+  width:100%;
+  background:rgba(255,255,255,.03);
+  border:1.5px solid rgba(255,255,255,.08);
+  border-radius:10px;color:var(--text);
+  font-size:.9rem;padding:1rem 1.1rem;
+  resize:vertical;min-height:120px;
+  outline:none;font-family:inherit;
+  transition:border-color .2s;line-height:1.65;
+}
+.scan-box textarea:focus{border-color:rgba(255,60,60,.4)}
+.scan-box textarea::placeholder{color:var(--muted)}
+
+.meta-row{display:flex;gap:.8rem;margin-top:.8rem;align-items:center}
+.meta-row input{
+  flex:1;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:8px;color:#ccc;
+  padding:8px 12px;font-size:.83rem;
+  outline:none;font-family:inherit;
+  transition:border-color .2s;
+}
+.meta-row input:focus{border-color:rgba(255,60,60,.35)}
+.meta-row input::placeholder{color:var(--muted)}
+
+/* live panel */
+.live{
+  margin-top:1rem;border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;transition:border-color .3s;
+}
+.live.on{border-color:rgba(255,60,60,.2)}
+.live-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.55rem 1rem;background:rgba(255,255,255,.02);
+  font-size:.72rem;font-family:var(--mono);color:var(--muted);
+}
+.live-head .pulse{width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:7px;display:inline-block;transition:background .3s}
+.live.on .live-head .pulse{background:var(--green);animation:blink 1s infinite}
+.live-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:0;padding:.3rem 0;
+}
+.lv{padding:.7rem 1rem;border-right:1px solid var(--border)}
+.lv:last-child,.lv:nth-child(3){border-right:none}
+.lv:nth-child(n+4){border-top:1px solid var(--border)}
+.lv label{display:block;font-size:.62rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.lv .v{font-size:.88rem;font-weight:600;color:var(--muted);transition:color .3s;font-family:var(--mono)}
+.lv .v.danger{color:var(--red)}
+.lv .v.warn{color:var(--orange)}
+.lv .v.safe{color:var(--green)}
+.lv .v.info{color:var(--blue)}
+.sbar{height:3px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:5px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:2px;transition:width .5s ease,background .3s;width:0%}
+
+.scan-actions{display:flex;gap:.8rem;margin-top:1.1rem;align-items:center}
+.err{color:var(--red);font-size:.83rem;margin-bottom:.8rem;font-family:var(--mono)}
+
+/* examples */
+.examples{max-width:720px;margin:1.8rem auto 0}
+.examples-label{font-size:.65rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:.7rem}
+.chips{display:flex;flex-wrap:wrap;gap:.45rem}
+.ex-chip{
+  padding:5px 13px;border-radius:8px;font-size:.76rem;
+  cursor:pointer;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--muted);transition:all .2s;
+  font-family:var(--sans);
+}
+.ex-chip:hover{background:var(--red-dim);border-color:rgba(255,60,60,.3);color:var(--red)}
+
+/* stats strip */
+.stats-strip{
+  display:flex;gap:1rem;margin:2rem auto 0;max-width:720px;
+}
+.stat-pill{
+  flex:1;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:.7rem 1rem;
+  display:flex;flex-direction:column;align-items:center;
+}
+.stat-pill .snum{font-size:1.4rem;font-weight:800;color:var(--red);font-family:var(--mono);line-height:1}
+.stat-pill .slbl{font-size:.65rem;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin-top:3px}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="hero-tag"><span></span>Live threat detection</div>
+  <h1>Is this message a <em>scam?</em></h1>
+  <p>5-layer detection engine — banking fraud, phishing, crypto scams, job fraud & loan traps.</p>
+</div>
+
+<div class="scan-wrap">
+  {% if error %}<p class="err">⚠ {{ error }}</p>{% endif %}
+  <div class="scan-box" id="scanBox">
+    <form method="post" action="/scan/" id="scanForm">
+      {% csrf_token %}
+      <textarea name="message" id="msgInput" placeholder="Paste a suspicious SMS, WhatsApp message, or URL here…"></textarea>
+      <div class="meta-row">
+        <input type="text" name="sender_id" id="senderInput" placeholder="Sender ID (optional) — e.g. VM-SBIBNK or 9876543210">
+      </div>
+
+      <div class="live" id="livePanel">
+        <div class="live-head">
+          <span><span class="pulse" id="livePulse"></span>Live analysis</span>
+          <span id="liveStatus" style="font-size:.7rem">type to begin…</span>
+        </div>
+        <div class="live-grid">
+          <div class="lv">
+            <label>Risk score</label>
+            <div class="v" id="lScore">—</div>
+            <div class="sbar"><div class="sbar-fill" id="lBar"></div></div>
+          </div>
+          <div class="lv">
+            <label>Severity</label>
+            <div class="v" id="lSev">—</div>
+          </div>
+          <div class="lv">
+            <label>Fraud type</label>
+            <div class="v" id="lType" style="font-size:.78rem">—</div>
+          </div>
+          <div class="lv">
+            <label>Keywords</label>
+            <div class="v" id="lKw" style="font-size:.72rem">—</div>
+          </div>
+          <div class="lv">
+            <label>URL flags</label>
+            <div class="v" id="lUrl" style="font-size:.72rem">—</div>
+          </div>
+          <div class="lv">
+            <label>Similar scam</label>
+            <div class="v" id="lSim" style="font-size:.72rem">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scan-actions">
+        <button type="submit" class="btn btn-primary">⬡ Full Scan</button>
+        <button type="button" class="btn btn-outline" onclick="clearForm()">Clear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="examples">
+  <div class="examples-label">Try an example</div>
+  <div class="chips">
+    <span class="ex-chip" onclick="fill(this)">🏦 SBI OTP blocked — share OTP at http://sbi-kyc.xyz/verify</span>
+    <span class="ex-chip" onclick="fill(this)">🎰 RBI lucky draw ₹2,00,000 — pay ₹500 processing fee</span>
+    <span class="ex-chip" onclick="fill(this)">💼 WFH earn ₹50,000/month — pay ₹999 registration</span>
+    <span class="ex-chip" onclick="fill(this)">₿ Send 0.1 ETH receive 1 ETH — Binance giveaway MetaMask</span>
+    <span class="ex-chip" onclick="fill(this)">💰 Instant loan ₹5L approved — pay ₹2000 GST processing fee</span>
+    <span class="ex-chip" onclick="fill(this)">📦 Flipkart parcel held at customs — pay fee bit.ly/flipkart</span>
+    <span class="ex-chip" onclick="fill(this)">✅ Hi, are you coming to office tomorrow?</span>
+  </div>
+</div>
+
+<div class="stats-strip">
+  <div class="stat-pill"><div class="snum">6</div><div class="slbl">Fraud categories</div></div>
+  <div class="stat-pill"><div class="snum">5</div><div class="slbl">Detection layers</div></div>
+  <div class="stat-pill"><div class="snum">100+</div><div class="slbl">Scam patterns</div></div>
+  <div class="stat-pill"><div class="snum">∞</div><div class="slbl">MongoDB logs</div></div>
+</div>
+
+<script>
+const SEV_COLOR={CRITICAL:'#ff4444',HIGH:'#ff3c3c',MEDIUM:'#ff8c42',LOW:'#00e5a0',UNKNOWN:'#4a4f6a'};
+const SEV_CLASS={CRITICAL:'danger',HIGH:'danger',MEDIUM:'warn',LOW:'safe',UNKNOWN:''};
+
+function fill(el){
+  const ta=document.getElementById('msgInput');
+  ta.value=el.textContent.replace(/^[^\s]+\s/,'').trim();
+  ta.dispatchEvent(new Event('input'));
+  ta.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function clearForm(){
+  document.getElementById('msgInput').value='';
+  document.getElementById('senderInput').value='';
+  resetLive();
+}
+function resetLive(){
+  ['lScore','lSev','lType','lKw','lUrl','lSim'].forEach(id=>{
+    const e=document.getElementById(id);e.textContent='—';e.className='v';
+  });
+  document.getElementById('lBar').style.width='0%';
+  document.getElementById('liveStatus').textContent='type to begin…';
+  document.getElementById('livePanel').className='live';
+  document.getElementById('scanBox').className='scan-box';
+}
+
+let timer;
+document.getElementById('msgInput').addEventListener('input',function(){
+  clearTimeout(timer);
+  if(this.value.trim().length<8){resetLive();return;}
+  document.getElementById('liveStatus').textContent='analysing…';
+  document.getElementById('livePanel').className='live on';
+  document.getElementById('scanBox').className='scan-box typing';
+  timer=setTimeout(()=>{
+    const fd=new FormData();
+    fd.append('message',this.value.trim());
+    fd.append('csrfmiddlewaretoken','{{ csrf_token }}');
+    fetch('/api/quick-scan/',{method:'POST',body:fd})
+      .then(r=>r.json()).then(d=>{
+        const sc=document.getElementById('lScore');
+        sc.textContent=d.risk_score+'/100';
+        sc.className='v '+(SEV_CLASS[d.severity]||'');
+        document.getElementById('lBar').style.width=d.risk_score+'%';
+        document.getElementById('lBar').style.background=SEV_COLOR[d.severity]||'#4a4f6a';
+        const sv=document.getElementById('lSev');
+        sv.textContent=d.severity;sv.className='v '+(SEV_CLASS[d.severity]||'');
+        document.getElementById('lType').textContent=d.scam_type||'—';
+        document.getElementById('lType').className='v info';
+        document.getElementById('lKw').textContent=d.keywords?.slice(0,3).join(', ')||'none detected';
+        document.getElementById('lUrl').textContent=d.url_flags?.length?d.url_flags[0]:'no suspicious URLs';
+        document.getElementById('lSim').textContent=d.top_match?d.top_match.description.slice(0,40)+'… ('+d.top_match.match_percent+'%)':'no match';
+        document.getElementById('liveStatus').textContent='live result ↑';
+      }).catch(()=>{document.getElementById('liveStatus').textContent='preview unavailable';});
+  },650);
+});
+</script>
+{% endblock %}
