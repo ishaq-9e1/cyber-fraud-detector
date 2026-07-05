@@ -1,0 +1,106 @@
+{% extends "fraud_app/base.html" %}
+{% block title %}Case {{ case.case_id }} — CyberGuard{% endblock %}
+{% block extra_style %}
+<style>
+.cd-header{display:flex;align-items:center;gap:1.5rem;padding:1.5rem 0 1rem;flex-wrap:wrap}
+.cd-score{width:90px;height:90px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.cd-score .num{font-size:1.6rem;font-weight:700;color:#fff}
+.cd-score .lbl{font-size:.6rem;color:#888}
+.cd-meta h2{font-size:1.2rem;font-weight:600;color:#fff}
+.cd-meta .sub{font-size:.8rem;color:#555;margin-top:.3rem}
+.sev-pill{display:inline-block;padding:3px 12px;border-radius:20px;font-size:.75rem;font-weight:600;margin-top:.4rem}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+@media(max-width:600px){.row2{grid-template-columns:1fr}}
+.info-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1rem}
+.info-card h4{font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:#444;margin-bottom:.7rem;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:6px}
+.info-row{display:flex;justify-content:space-between;font-size:.83rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.info-row:last-child{border-bottom:none}
+.info-row .k{color:#555}
+.info-row .v{color:#ccc;text-align:right;max-width:60%}
+.chip{display:inline-block;padding:3px 9px;border-radius:12px;font-size:.73rem;margin:2px;background:rgba(231,76,60,.1);color:#e74c3c;border:1px solid rgba(231,76,60,.2)}
+.chip.orange{background:rgba(230,126,34,.1);color:#e67e22;border-color:rgba(230,126,34,.2)}
+.warning-box{background:rgba(231,76,60,.06);border-left:3px solid #e74c3c;border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:.8rem 0;font-size:.86rem;color:#ddd;line-height:1.7}
+.steps{list-style:none;padding:0;margin:0}
+.steps li{display:flex;gap:.7rem;padding:.4rem 0;font-size:.85rem;color:#bbb;border-bottom:1px solid rgba(255,255,255,.04)}
+.steps li:last-child{border-bottom:none}
+.step-num{background:#e74c3c;color:#fff;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0;margin-top:2px}
+.msg-box{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:1rem;font-size:.85rem;color:#bbb;line-height:1.7;word-break:break-word;margin-top:.5rem}
+.actions{display:flex;gap:.8rem;margin-top:1.5rem;flex-wrap:wrap}
+</style>
+{% endblock %}
+
+{% block content %}
+{% with sev=case.severity score=case.risk_score %}
+<div class="cd-header">
+  <div class="cd-score" style="background:{% if sev == 'CRITICAL' %}rgba(192,57,43,.2){% elif sev == 'HIGH' %}rgba(231,76,60,.18){% elif sev == 'MEDIUM' %}rgba(230,126,34,.18){% else %}rgba(46,204,113,.18){% endif %};border:2px solid {% if sev == 'CRITICAL' %}#c0392b{% elif sev == 'HIGH' %}#e74c3c{% elif sev == 'MEDIUM' %}#e67e22{% else %}#2ecc71{% endif %}">
+    <div class="num">{{ score }}</div><div class="lbl">/100</div>
+  </div>
+  <div class="cd-meta">
+    <h2>{{ case.scam_type }}</h2>
+    <div class="sub"><code>{{ case.case_id }}</code> · {{ case.timestamp }}</div>
+    <div class="sev-pill" style="background:{% if sev == 'CRITICAL' %}rgba(192,57,43,.2){% elif sev == 'HIGH' %}rgba(231,76,60,.18){% elif sev == 'MEDIUM' %}rgba(230,126,34,.18){% else %}rgba(46,204,113,.18){% endif %};color:{% if sev == 'CRITICAL' %}#c0392b{% elif sev == 'HIGH' %}#e74c3c{% elif sev == 'MEDIUM' %}#e67e22{% else %}#2ecc71{% endif %}">
+      {{ sev }} · {{ case.risk_level }}
+    </div>
+  </div>
+</div>
+
+<!-- Original message -->
+<div class="info-card" style="margin-bottom:1rem">
+  <h4>Original message</h4>
+  <div class="msg-box">{{ case.text }}</div>
+</div>
+
+<div class="row2">
+  <!-- Detection details -->
+  <div class="info-card">
+    <h4>Detection details</h4>
+    <div class="info-row"><span class="k">Channel</span><span class="v">{{ case.channel }}</span></div>
+    <div class="info-row"><span class="k">Forwarded</span><span class="v">{{ case.is_forwarded }}</span></div>
+    <div class="info-row"><span class="k">Urgency escalation</span><span class="v">{{ case.urgency_escalation }}</span></div>
+    <div class="info-row"><span class="k">Fraud class</span><span class="v">{{ case.fraud_class }}</span></div>
+    {% if case.phones %}
+    <div class="info-row"><span class="k">Phone numbers</span><span class="v">{{ case.phones|join:", " }}</span></div>
+    {% endif %}
+  </div>
+
+  <!-- Signal scores -->
+  <div class="info-card">
+    <h4>Signal scores</h4>
+    {% for k, v in case.confidence_breakdown.items %}
+    <div class="info-row"><span class="k">{{ k|title }}</span><span class="v">{{ v }}%</span></div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Keywords / flags -->
+{% if case.keyword_hits or case.urgency_phrases or case.authority_entities %}
+<div class="info-card" style="margin-top:1rem">
+  <h4>Detected signals</h4>
+  {% for kw in case.keyword_hits %}<span class="chip">{{ kw }}</span>{% endfor %}
+  {% for p in case.urgency_phrases %}<span class="chip orange">{{ p }}</span>{% endfor %}
+  {% for e in case.authority_entities %}<span class="chip">impersonates: {{ e }}</span>{% endfor %}
+</div>
+{% endif %}
+
+<!-- Warning -->
+<div class="warning-box"><strong>⚠ Warning:</strong> {{ case.warning }}</div>
+
+<!-- Action steps -->
+{% if case.action_steps %}
+<div class="info-card" style="margin-top:1rem">
+  <h4>Recommended actions</h4>
+  <ul class="steps">
+    {% for step in case.action_steps %}
+    <li><div class="step-num">{{ forloop.counter }}</div><div>{{ step }}</div></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="actions">
+  <a href="/" class="btn btn-primary">🔍 New Scan</a>
+  <a href="/history/" class="btn btn-outline">← Back to History</a>
+  <a href="/dashboard/" class="btn btn-outline">📊 Dashboard</a>
+</div>
+{% endwith %}
+{% endblock %}

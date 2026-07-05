@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}CyberGuard{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080f;
+  --surface:#0d0f1c;
+  --surface2:#131629;
+  --border:rgba(255,255,255,.07);
+  --border-hot:rgba(255,60,60,.35);
+  --red:#ff3c3c;
+  --red-dim:rgba(255,60,60,.12);
+  --orange:#ff8c42;
+  --green:#00e5a0;
+  --blue:#4da6ff;
+  --text:#e8eaf0;
+  --muted:#4a4f6a;
+  --mono:'Space Mono',monospace;
+  --sans:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,60,60,.07) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(13,15,28,.8) 0%, var(--bg) 100%);
+}
+nav{
+  position:sticky;top:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2.5rem;height:60px;
+  background:rgba(7,8,15,.88);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,#ff3c3c,#ff6b6b);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;
+  box-shadow:0 0 16px rgba(255,60,60,.35);
+}
+.logo-text{font-family:var(--sans);font-weight:800;font-size:.95rem;color:#fff;letter-spacing:-.3px}
+.logo-text span{color:var(--red)}
+nav ul{list-style:none;display:flex;gap:4px}
+nav a{
+  color:var(--muted);text-decoration:none;
+  padding:6px 14px;border-radius:6px;
+  font-size:.82rem;font-weight:600;letter-spacing:.3px;
+  transition:all .2s;font-family:var(--sans);
+}
+nav a:hover{color:var(--text);background:rgba(255,255,255,.05)}
+nav a.active{color:var(--red);background:var(--red-dim)}
+.nav-dot{
+  display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--green);margin-left:6px;vertical-align:middle;
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+main{max-width:1080px;margin:0 auto;padding:2.5rem 1.5rem}
+h1,h2,h3{font-family:var(--sans);font-weight:800}
+code{font-family:var(--mono);font-size:.82em;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 22px;border-radius:8px;
+  font-size:.83rem;font-weight:700;font-family:var(--sans);
+  cursor:pointer;border:none;transition:all .18s;
+  text-decoration:none;letter-spacing:.3px;
+}
+.btn-primary{background:var(--red);color:#fff;box-shadow:0 4px 20px rgba(255,60,60,.28)}
+.btn-primary:hover{background:#e03030;transform:translateY(-1px);box-shadow:0 6px 24px rgba(255,60,60,.4)}
+.btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.5px;font-family:var(--mono);text-transform:uppercase}
+.b-critical{background:rgba(192,57,43,.2);color:#ff4444;border:1px solid rgba(255,68,68,.25)}
+.b-high{background:rgba(255,60,60,.15);color:var(--red);border:1px solid rgba(255,60,60,.25)}
+.b-medium{background:rgba(255,140,66,.15);color:var(--orange);border:1px solid rgba(255,140,66,.25)}
+.b-low{background:rgba(0,229,160,.1);color:var(--green);border:1px solid rgba(0,229,160,.2)}
+.sec-label{font-size:.67rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.chip-r{display:inline-block;padding:3px 10px;border-radius:6px;font-size:.72rem;margin:2px;background:rgba(255,60,60,.1);color:var(--red);border:1px solid rgba(255,60,60,.2);font-family:var(--mono)}
+.chip-o{display:inline-block;padding:3px 10px;border-radius:6px;font-size:.72rem;margin:2px;background:rgba(255,140,66,.1);color:var(--orange);border:1px solid rgba(255,140,66,.2);font-family:var(--mono)}
+.chip-b{display:inline-block;padding:3px 10px;border-radius:6px;font-size:.72rem;margin:2px;background:rgba(77,166,255,.1);color:var(--blue);border:1px solid rgba(77,166,255,.2);font-family:var(--mono)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:620px){.grid-2{grid-template-columns:1fr}}
+.warn-box{background:rgba(255,60,60,.05);border-left:3px solid var(--red);border-radius:0 10px 10px 0;padding:1rem 1.3rem;font-size:.86rem;color:#ccc;line-height:1.75}
+.steps{list-style:none}
+.steps li{display:flex;gap:.9rem;padding:.55rem 0;font-size:.85rem;color:#bbb;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.step-num{background:var(--red);color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;flex-shrink:0;margin-top:1px;font-family:var(--mono)}
+.info-row{display:flex;justify-content:space-between;align-items:center;font-size:.83rem;padding:.4rem 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-row .ik{color:var(--muted)}
+.info-row .iv{color:var(--text);text-align:right;max-width:65%;word-break:break-all}
+.tbl{width:100%;border-collapse:collapse;font-size:.83rem}
+.tbl th{text-align:left;padding:.5rem .8rem;font-size:.65rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;color:var(--muted);border-bottom:1px solid var(--border);font-weight:400}
+.tbl td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.03);color:#ccc}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+{% block extra_style %}{% endblock %}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="/">
+    <div class="logo-mark">⬡</div>
+    <div class="logo-text">Cyber<span>Guard</span></div>
+  </a>
+  <ul>
+    <li><a href="/" {% if request.path == '/' %}class="active"{% endif %}>Scan</a></li>
+    <li><a href="/dashboard/" {% if 'dashboard' in request.path %}class="active"{% endif %}>Dashboard</a></li>
+    <li><a href="/history/" {% if 'history' in request.path %}class="active"{% endif %}>History<span class="nav-dot"></span></a></li>
+  </ul>
+</nav>
+<main>{% block content %}{% endblock %}</main>
+</body>
+</html>

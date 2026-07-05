@@ -1,0 +1,158 @@
+{% extends "fraud_app/base.html" %}
+{% block title %}Result — CyberGuard{% endblock %}
+{% block extra_style %}
+<style>
+.result-hero{display:flex;align-items:center;gap:2rem;padding:1.8rem 0 1.2rem;flex-wrap:wrap}
+.ring-wrap{position:relative;width:120px;height:120px;flex-shrink:0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-center .rnum{font-size:2rem;font-weight:800;color:#fff;line-height:1;font-family:var(--mono)}
+.ring-center .rlbl{font-size:.58rem;color:var(--muted);font-family:var(--mono);margin-top:2px;text-transform:uppercase;letter-spacing:.8px}
+.result-meta{flex:1;min-width:200px}
+.result-meta h2{font-size:1.4rem;font-weight:800;color:#fff;margin-bottom:.3rem}
+.result-meta .sub{font-size:.78rem;color:var(--muted);font-family:var(--mono)}
+.sev-pill{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.75rem;font-weight:700;margin-top:.6rem;font-family:var(--mono);letter-spacing:.5px}
+
+.sig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:1rem 0}
+@media(max-width:600px){.sig-grid{grid-template-columns:1fr 1fr}}
+.sig-card{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:.8rem}
+.sig-card .slbl{font-size:.62rem;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.sig-card .sval{font-size:.95rem;font-weight:600;color:var(--text);font-family:var(--mono)}
+.sig-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:6px;overflow:hidden}
+.sig-fill{height:100%;border-radius:2px;transition:width .6s ease}
+
+.sec{margin:1rem 0}
+.sim-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem .8rem;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;margin-bottom:.4rem}
+.sim-row .scat{font-size:.7rem;color:var(--muted);font-family:var(--mono)}
+.sim-row .sdesc{font-size:.84rem;color:var(--text);margin-top:1px}
+.sim-pct{font-size:1rem;font-weight:700;font-family:var(--mono)}
+.url-flag{background:rgba(255,60,60,.07);border:1px solid rgba(255,60,60,.15);border-radius:7px;padding:.5rem .9rem;font-size:.8rem;color:var(--red);margin-bottom:.4rem;font-family:var(--mono)}
+.actions{display:flex;gap:.8rem;margin-top:1.8rem;flex-wrap:wrap}
+</style>
+{% endblock %}
+
+{% block content %}
+{% with score=scan.risk_score sev=scan.severity %}
+
+<div class="result-hero">
+  <div class="ring-wrap">
+    <svg width="120" height="120" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="10"/>
+      <circle cx="60" cy="60" r="50" fill="none"
+        stroke="{% if sev == 'CRITICAL' %}#ff4444{% elif sev == 'HIGH' %}#ff3c3c{% elif sev == 'MEDIUM' %}#ff8c42{% else %}#00e5a0{% endif %}"
+        stroke-width="10" stroke-linecap="round"
+        style="stroke-dasharray: calc({{ score }} * 3.14px) 9999px;"/>
+    </svg>
+    <div class="ring-center">
+      <div class="rnum">{{ score }}</div>
+      <div class="rlbl">/ 100</div>
+    </div>
+  </div>
+
+  <div class="result-meta">
+    <h2>{{ scan.scam_type }}</h2>
+    <div class="sub">Case <code>{{ case.case_id }}</code> · {{ scan.timestamp }}</div>
+    <div class="sev-pill" style="
+      background:{% if sev == 'CRITICAL' %}rgba(192,57,43,.2){% elif sev == 'HIGH' %}rgba(255,60,60,.15){% elif sev == 'MEDIUM' %}rgba(255,140,66,.15){% else %}rgba(0,229,160,.1){% endif %};
+      color:{% if sev == 'CRITICAL' %}#ff4444{% elif sev == 'HIGH' %}#ff3c3c{% elif sev == 'MEDIUM' %}#ff8c42{% else %}#00e5a0{% endif %};
+      border:1px solid {% if sev == 'CRITICAL' %}rgba(255,68,68,.3){% elif sev == 'HIGH' %}rgba(255,60,60,.3){% elif sev == 'MEDIUM' %}rgba(255,140,66,.3){% else %}rgba(0,229,160,.25){% endif %}">
+      {{ sev }} — {{ scan.risk_level }}
+    </div>
+  </div>
+</div>
+
+<!-- Signal breakdown -->
+{% if confidence_breakdown %}
+<div class="sec">
+  <div class="sec-label">Detection signal breakdown</div>
+  <div class="sig-grid">
+    {% for signal, pct in confidence_breakdown.items %}
+    <div class="sig-card">
+      <div class="slbl">{{ signal|title }}</div>
+      <div class="sval">{{ pct }}%</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:{{ pct }}%;background:{% if pct > 50 %}#ff3c3c{% elif pct > 25 %}#ff8c42{% else %}#4da6ff{% endif %}"></div></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Category scores -->
+{% if category_scores %}
+<div class="sec">
+  <div class="sec-label">Fraud category scores</div>
+  {% for cat, sc in category_scores.items %}
+  <span class="chip-r">{{ cat }}: {{ sc }}</span>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Detected signals -->
+{% if scan.keyword_hits or scan.urgency_phrases or scan.authority_entities %}
+<div class="sec">
+  <div class="sec-label">Detected signals</div>
+  {% for kw in scan.keyword_hits %}<span class="chip-r">{{ kw }}</span>{% endfor %}
+  {% for p in scan.urgency_phrases %}<span class="chip-o">⚡ {{ p }}</span>{% endfor %}
+  {% for e in scan.authority_entities %}<span class="chip-r">impersonates: {{ e }}</span>{% endfor %}
+</div>
+{% endif %}
+
+<!-- URL Analysis -->
+{% if url_analysis.all_flags %}
+<div class="sec">
+  <div class="sec-label">URL threat analysis — score {{ url_analysis.max_score }}/100</div>
+  {% for flag in url_analysis.all_flags %}
+  <div class="url-flag">⚠ {{ flag }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Message parser -->
+{% if parse.pre_flags %}
+<div class="sec">
+  <div class="sec-label">Message metadata flags</div>
+  {% for flag in parse.pre_flags %}<span class="chip-o">{{ flag }}</span>{% endfor %}
+  {% if parse.urgency_escalation %}<span class="chip-r">urgency escalation detected</span>{% endif %}
+</div>
+{% endif %}
+
+<!-- Similarity -->
+{% if similarity_matches %}
+<div class="sec">
+  <div class="sec-label">Similar known scams — {{ sim_verdict }}</div>
+  {% for m in similarity_matches %}
+  <div class="sim-row">
+    <div>
+      <div class="scat">{{ m.category }} · {{ m.severity }}</div>
+      <div class="sdesc">{{ m.description }}</div>
+    </div>
+    <div class="sim-pct" style="color:{% if m.match_percent >= 60 %}#ff3c3c{% elif m.match_percent >= 35 %}#ff8c42{% else %}#4a4f6a{% endif %}">{{ m.match_percent }}%</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Warning -->
+<div class="warn-box" style="margin-top:1rem">
+  <strong>⚠ Warning:</strong> {{ warning }}
+</div>
+
+<!-- Action steps -->
+{% if action_steps %}
+<div class="sec" style="margin-top:1rem">
+  <div class="sec-label">Recommended actions</div>
+  <ul class="steps">
+    {% for step in action_steps %}
+    <li><div class="step-num">{{ forloop.counter }}</div><div>{{ step }}</div></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="actions">
+  <a href="/" class="btn btn-primary">⬡ Scan Another</a>
+  <a href="/dashboard/" class="btn btn-outline">Dashboard</a>
+  <a href="/history/" class="btn btn-outline">History</a>
+</div>
+{% endwith %}
+{% endblock %}
