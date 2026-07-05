@@ -1,111 +1,95 @@
-# 🛡️ CyberGuard — Cyber Fraud Detection System
+# CyberGuard — Cyber Fraud Detection System
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/Django-4.x-green?logo=django&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Optional-brightgreen?logo=mongodb&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
-![Status](https://img.shields.io/badge/Status-Active-success)
 
-> A full-stack intelligent fraud detection system that analyzes SMS and WhatsApp messages in real-time using TF-IDF scoring, Shannon entropy URL analysis, cosine/Jaccard similarity matching, and a Django-powered analytics dashboard.
+A full-stack fraud detection system that analyzes SMS and WhatsApp messages using TF-IDF scoring, Shannon entropy URL analysis, and cosine/Jaccard similarity matching. Includes a Django web dashboard for live detection, case history, and analytics.
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 | Home Page | Detection Result | Analytics Dashboard |
-|-----------|-----------------|---------------------|
-| Enter any suspicious message for analysis | Risk score with signal breakdown | Charts: bar, pie, line, scatter |
+|-----------|-------------------|----------------------|
+| Enter a message for analysis | Risk score with signal breakdown | Bar, pie, line, and scatter charts |
 
 ---
 
-## 🚀 Features
+## Features
 
-- 🔍 **6 Fraud Categories** — Banking, Crypto, Job, Loan, OTP, and Safe message classification
-- 📊 **TF-IDF Scoring Engine** — Weighted keyword matching with per-category risk bands
-- 🔗 **URL Analyzer** — Shannon entropy detection, homograph/lookalike domain alerts, and Kadane's algorithm for suspicious windows
-- 🧠 **Similarity Engine** — Jaccard + cosine similarity against a known scam corpus
-- 📱 **SMS/WhatsApp Parser** — OOP-based message parser for real-world message formats
-- 📈 **Data Analytics** — NumPy statistics, Pandas DataFrames, and Matplotlib chart generation
-- 🌐 **Django Web App** — Full MVT architecture with live detection, history, and dashboard
-- 🗄️ **MongoDB Support** — Optional persistent storage; falls back to `.log` file gracefully
-- 📋 **Case History** — View and filter all previously analyzed messages
+- **6 fraud categories** — banking, crypto, job, loan, OTP, and safe message classification
+- **TF-IDF scoring engine** — weighted keyword matching with per-category risk bands
+- **URL analyzer** — Shannon entropy detection and homograph/lookalike domain checks
+- **Similarity engine** — Jaccard and cosine similarity against a known scam corpus
+- **SMS/WhatsApp parser** — OOP-based message parser for real-world message formats
+- **Data analytics** — NumPy statistics, Pandas DataFrames, and Matplotlib charts
+- **Django web app** — full MVT architecture with live detection, history, and dashboard
+- **MongoDB support** — optional persistent storage, falls back to a log file if unavailable
+- **Case history** — view and filter previously analyzed messages
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
-cyberfraud_detection/
+cyber-fraud-detector/
 │
-├── module1/                    ← Pure Python detection engine (no Django)
-│   ├── main.py                 ← CLI entry point — run this first
-│   ├── fraud_engine.py         ← TF-IDF scoring, 6 fraud types, risk bands
-│   ├── url_analyzer.py         ← Shannon entropy, homograph detection
-│   ├── similarity_engine.py    ← Jaccard + cosine similarity matching
-│   ├── message_parser.py       ← SMS/WhatsApp OOP message parser
-│   ├── fraud_models.py         ← OOP class hierarchy + MongoDB CRUD
-│   ├── fraud_analytics.py      ← NumPy + Pandas + Matplotlib charts
-│   └── fraud_cases.log         ← Auto-generated case log (no MongoDB needed)
+├── module1/                    Pure Python detection engine (no Django)
+│   ├── main.py                 CLI entry point — run this first
+│   ├── fraud_engine.py         TF-IDF scoring, 6 fraud types, risk bands
+│   ├── url_analyzer.py         Shannon entropy, homograph detection
+│   ├── similarity_engine.py    Jaccard + cosine similarity matching
+│   ├── message_parser.py       SMS/WhatsApp OOP message parser
+│   ├── fraud_models.py         OOP class hierarchy + MongoDB CRUD
+│   ├── fraud_analytics.py      NumPy + Pandas + Matplotlib charts
+│   └── fraud_cases.log         Auto-generated case log (no MongoDB needed)
 │
-└── module2/                    ← Django web application
+└── module2/                    Django web application
     ├── manage.py
-    ├── db.sqlite3
-    ├── cyberguard/             ← Django project settings & URLs
+    ├── cyberguard/              Django project settings and URLs
     │   ├── settings.py
     │   └── urls.py
-    └── fraud_app/              ← Main Django app
-        ├── views.py            ← All view logic, imports Module 1 engine
+    └── fraud_app/               Main Django app
+        ├── views.py             View logic, imports the module1 engine
         ├── urls.py
-        ├── templates/
-        │   └── fraud_app/
-        │       ├── base.html
-        │       ├── home.html
-        │       ├── result.html
-        │       ├── dashboard.html
-        │       ├── history.html
-        │       └── case_detail.html
-        └── static/
-            └── fraud_app/      ← Pre-generated chart images
+        ├── templates/fraud_app/
+        └── static/fraud_app/    Chart images
 ```
 
 ---
 
-## ⚙️ Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
-- Python 3.8 or higher
+- Python 3.8+
 - pip
-- MongoDB (optional — app works without it)
+- MongoDB (optional — the app works without it)
 
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/ishaq-9e1/cyber-fraud-detector.git
-cd cyberfraud-detection
+cd cyber-fraud-detector
 ```
 
-### 2. Install Dependencies
+### 2. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Run Module 1 — CLI Demo (Terminal)
+### 3. Run module 1 — CLI demo
 
 ```bash
 cd module1
 python3 main.py
 ```
 
-This will:
-- ✅ Scan 5 test messages (banking, crypto, job, loan, safe)
-- ✅ Show per-signal risk breakdown for each message
-- ✅ Save results to `fraud_cases.log`
-- ✅ Save to MongoDB (if running)
-- ✅ Print NumPy/Pandas statistics
-- ✅ Generate Matplotlib charts
+This scans a set of test messages, prints a per-signal risk breakdown for each, saves results to `fraud_cases.log` (and to MongoDB if running), and generates summary statistics and charts.
 
-### 4. Run Module 2 — Django Web App
+### 4. Run module 2 — Django web app
 
 ```bash
 cd ../module2
@@ -113,13 +97,13 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 
-Open your browser at: **http://127.0.0.1:8000**
+Then open http://127.0.0.1:8000 in a browser.
 
 ---
 
-## 🔌 MongoDB Setup (Optional)
+## MongoDB Setup (Optional)
 
-The app works fully **without MongoDB** — it falls back to `fraud_cases.log`. To enable MongoDB:
+The app works fully without MongoDB — it falls back to `fraud_cases.log`. To enable it:
 
 ```bash
 # macOS
@@ -132,70 +116,44 @@ sudo systemctl start mongod
 net start MongoDB
 ```
 
-MongoDB URI used: `mongodb://localhost:27017/` — Database: `cyberfraud`
+MongoDB URI: `mongodb://localhost:27017/` — Database: `cyberfraud`
 
 ---
 
-## 🧪 How It Works
-
-### Detection Pipeline
+## How It Works
 
 ```
 Input Message
-     │
-     ▼
-┌─────────────────┐
-│  Message Parser │  ← OOP-based SMS/WhatsApp parser
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Fraud Engine   │  ← TF-IDF keyword scoring × category weight
-│  (6 categories) │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  URL Analyzer   │  ← Shannon entropy + homograph detection
-└────────┬────────┘
-         │
-         ▼
-┌──────────────────┐
-│ Similarity Engine│  ← Jaccard + cosine vs known scam database
-└────────┬─────────┘
-         │
-         ▼
-   Risk Score (0–100)
-   Safe / Suspicious / Critical
+     |
+     v
+Message Parser        SMS/WhatsApp OOP parser
+     |
+     v
+Fraud Engine           TF-IDF keyword scoring x category weight (6 categories)
+     |
+     v
+URL Analyzer           Shannon entropy + homograph detection
+     |
+     v
+Similarity Engine      Jaccard + cosine similarity vs known scam database
+     |
+     v
+Risk Score (0-100)     Safe / Suspicious / Critical
 ```
 
 ### Risk Bands
 
 | Score | Label | Severity |
 |-------|-------|----------|
-| 0–15 | ✅ Safe | LOW |
-| 16–35 | 🟡 Low Suspicion | LOW |
-| 36–60 | 🟠 Suspicious | MEDIUM |
-| 61–80 | 🔴 High Risk | HIGH |
-| 81–100 | 🚨 Critical Scam | CRITICAL |
+| 0–15 | Safe | Low |
+| 16–35 | Low Suspicion | Low |
+| 36–60 | Suspicious | Medium |
+| 61–80 | High Risk | High |
+| 81–100 | Critical Scam | Critical |
 
 ---
 
-## 📚 Syllabus / Curriculum Coverage
-
-This project was built as a comprehensive Python & Django academic project, covering:
-
-| Unit | Topics Covered | Files |
-|------|---------------|-------|
-| Unit I | Constructs, lambdas, functions, loops | `fraud_engine.py` |
-| Unit II | Lists, tuples, dicts, sets, illustrative programs | `fraud_engine.py`, `similarity_engine.py`, `url_analyzer.py` |
-| Unit III | File I/O, modules, regex, exception handling | `url_analyzer.py`, `message_parser.py`, `fraud_models.py` |
-| Unit IV | OOP — 6 subclasses, inheritance, MongoDB CRUD | `fraud_models.py` |
-| Unit V | NumPy, Pandas, Matplotlib, Django MVT | `fraud_analytics.py`, `module2/views.py` |
-
----
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -209,11 +167,10 @@ This project was built as a comprehensive Python & Django academic project, cove
 
 ---
 
-## 📦 Requirements
+## Requirements
 
-See [`requirements.txt`](requirements.txt) for the full list.
+See [`requirements.txt`](requirements.txt) for the full list. Core dependencies:
 
-Core dependencies:
 ```
 django
 pymongo
@@ -224,29 +181,13 @@ matplotlib
 
 ---
 
-## 🤝 Contributing
-
-Pull requests are welcome! For major changes, please open an issue first.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -m 'Add some feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
+## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👤 Author
+## Author
 
-**ishaq-9e1**
-- GitHub: [@ishaq-9e1](https://github.com/ishaq-9e1)
-
----
-
-> ⭐ If this project helped you, please consider giving it a star!
+**Mohammed Ishaq**
+GitHub: [@ishaq-9e1](https://github.com/ishaq-9e1)
