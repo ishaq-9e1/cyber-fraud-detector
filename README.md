@@ -13,7 +13,7 @@ A full-stack fraud detection system that analyzes SMS and WhatsApp messages usin
 
 | Home Page | Detection Result | Analytics Dashboard |
 |-----------|-------------------|----------------------|
-| Enter a message for analysis | Risk score with signal breakdown | Bar, pie, line, and scatter charts |
+| ![Home](screenshots/home.png) | ![Result](screenshots/result.png) | ![Dashboard](screenshots/dashboard.png) |
 
 ---
 
